@@ -1,0 +1,27 @@
+body{
+    font-family: 'Dancing Script', cursive;
+    display: flex;
+    height: 100vh;
+    background-color: greenyellow;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+}
+
+#contenedor{
+    justify-content: center;
+    text-align: left;
+    background-color: lightgray;
+    width: 600px;
+    padding: 1rem ;
+    border-radius: 1rem;
+}
+
+.tarea{
+    width: 300px;
+    padding: 10px 10px 10px 10px;
+}
+
+#descripcionTarea{
+    font-size: 1rem;
+}
