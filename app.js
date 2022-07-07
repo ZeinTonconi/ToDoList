@@ -20,7 +20,7 @@ function crearCheck(){
     celda.appendChild(check);
     /*
     celda.innerHTML+="<label>No Completado</label>"
-    */
+    */  
     let label=document.createElement('label');
     label.innerText="No Completado";
     celda.appendChild(label);
