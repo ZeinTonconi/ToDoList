@@ -1,108 +1,135 @@
 
-function crearTarea(titulo,descripcion){
-    let tarea=document.createElement('td');
-    tarea.setAttribute('class','tarea');
-    tarea.innerHTML=`<div class="visble"><div class="tituloTarea">${titulo}</div><div class="descripcionTarea">${descripcion}</div></div>
-        <div class="invisible"><input type="text" placeholder="Descripcion de la Tarea"><br><textarea placeholder="Titulo de la Tarea"></textarea></div>
-    `;
-    return tarea;
+const data=[
+    ["Hacer el Mercado","Leche, tomate, sandia, huevos",false],
+    ['Hacer Tarea',"Practica de Fisica, Ejercicios de Mate",true],
+    ["Programar",'',false]
+];
+
+
+
+class Task{
+    staticTask="visible";
+    dynamicTask="invisible";
+    constructor (tittle, description,taskId,isCompleted){
+        this.tittle=tittle;
+        this.description=description;
+        this.taskId=taskId;
+        this.isCompleted=isCompleted;
+    }
+    taskHTML() {
+        return `<div class=${this.staticTask}>
+                    <div class="taskTittle">${this.tittle}</div>
+                    <div class="taskDescription">${this.description}</div>
+                </div>
+                <div class=${this.dynamicTask}>
+                    <input type="text" placeholder="Descripcion de la Tarea" value="${this.tittle}" id="textTittle${this.taskId}"><br>
+                    <textarea placeholder="Titulo de la Tarea" id="textDescription${this.taskId}">${this.description}</textarea></div>
+                </div>`;
+    }
+    changeCompleted(){
+        this.isCompleted=!this.isCompleted;
+    }
+    draw(){
+        let row=document.getElementById(`task${this.taskId}`);
+        row.childNodes[0].innerHTML=this.taskHTML();
+        if(row.childNodes[1].childNodes.length===0)
+        row.childNodes[1].appendChild(createCheckbox(this.taskId,this.isCompleted));
+
+        let saveButton=document.getElementById(`save${this.taskId}`);
+        let editButton=document.getElementById(`edit${this.taskId}`);
+        saveButton.className=this.dynamicTask;
+        editButton.className=this.staticTask;
+    }
 }
-function crearCheck(){
-    let celda=document.createElement('td');
-    let check=document.createElement('input');
-    check.setAttribute('type','checkbox');
-    check.addEventListener('change',(event)=>{
-        if(event.target.checked)
-            event.target.nextSibling.innerText="Completado";
-        else
-            event.target.nextSibling.innerText="No Completado";
-    });
-    celda.appendChild(check);
-    /*
-    celda.innerHTML+="<label>No Completado</label>"
-    */
+
+function editTask(event){
+    let id=event.target.getAttribute('id').slice(4);
+    let actualTask=taskList.find(task => task.taskId==id);
+    actualTask.staticTask="invisible";
+    actualTask.dynamicTask="visible";
+    actualTask.draw();
+}
+function saveTask(event){
+    let id=event.target.getAttribute('id').slice(4);
+    let actualTask=taskList.find(task => task.taskId==id);
+    actualTask.staticTask="visible";
+    actualTask.dynamicTask="invisible";
+    let newTittle=document.getElementById(`textTittle${actualTask.taskId}`);
+    actualTask.tittle=newTittle.value;
+    let newDescription=document.getElementById(`textDescription${actualTask.taskId}`);
+    actualTask.description=newDescription.value;
+    actualTask.draw();
+}
+
+function createCheckbox(taskId, taskIsCompleted){
+    let div=document.createElement('div');
+    let box=document.createElement("input");
+    box.setAttribute('type','checkbox');
+    box.setAttribute('id',`check${taskId}`);
+    box.checked=taskIsCompleted;
     let label=document.createElement('label');
-    label.innerText="No Completado";
-    celda.appendChild(label);
-    return celda;
+    label.innerText= taskIsCompleted===true ? 'Completado' : 'No Completado';
+    box.addEventListener('click',(event)=>{
+        let id=event.target.getAttribute('id').slice(5);
+        let actualTask=taskList.find(task => task.taskId==id);
+        actualTask.changeCompleted();
+        event.target.nextSibling.innerText= actualTask.isCompleted===true ? 'Completado': 'No Completado';
+    });
+    div.appendChild(box);
+    div.appendChild(label);
+    return div;
 }
-function cambiarEditarGuardar(lapiz, guardar){
-    let tarea=lapiz.parentNode.parentNode.firstChild;
-    if(lapiz.className==="visible"){
-        lapiz.className="invisible";
-        guardar.className="visible";
-        tarea.firstElementChild.className="invisible";
-        tarea.lastElementChild.className="visible";
-    }
-    else{
-        lapiz.className="visible";
-        guardar.className="invisible";
-        tarea.firstElementChild.className="visible";
-        tarea.lastElementChild.className="invisible";
-    }
+
+let taskList=new Array();
+let id=0;
+
+function createButton(idButton,tag,callbackFunc){
+    let button=document.createElement('input');
+    button.setAttribute('type','button');
+    button.setAttribute('id',idButton);
+    button.setAttribute('value',tag);
+    button.addEventListener('click',callbackFunc);
+    return button;
 }
-function editarTarea(event){
-    let lapiz=event.target;
-    let guardar=lapiz.nextSibling;
-    cambiarEditarGuardar(lapiz,guardar);
-    let tarea=lapiz.parentNode.parentNode.firstChild;
-    let titulo=tarea.firstElementChild.firstElementChild.firstChild;
-    let descripcion=tarea.firstElementChild.lastElementChild.firstChild;
-    // innerText is for IE DOM, textContent is for the rest of the compliant DOM APIs such as Mozillas.
-    // no funciona con innerText
-    tarea.lastElementChild.firstElementChild.value=titulo.textContent;
-    if(descripcion!=null)
-        tarea.lastElementChild.lastElementChild.value=descripcion.textContent;
-}
-function guardarTarea(event){
-    let guardar=event.target;
-    let lapiz=guardar.previousSibling;
-    cambiarEditarGuardar(lapiz,guardar);
-    let tarea=lapiz.parentNode.parentNode.firstChild;
-    let titulo=tarea.lastElementChild.firstElementChild.value;
-    if(titulo==""){
+
+function addTask(tittle,description,isCompleted=false){
+    if(tittle===""){
         alert("Pongale Titulo a la Tarea");
         return;
     }
-    let descripcion=tarea.lastElementChild.lastElementChild.value;
-    tarea.firstElementChild.firstElementChild.firstChild.textContent=titulo;
-    if(tarea.firstElementChild.lastElementChild.hasChildNodes()){
-        tarea.firstElementChild.lastElementChild.firstChild.textContent=descripcion;
-    }
-    else{
-        tarea.firstElementChild.lastElementChild.appendChild(document.createTextNode(descripcion));
-    }
-}
-function crearEditar(){
-    let celda=document.createElement('td');
-    let lapiz=document.createElement('input');
-    lapiz.setAttribute('type','button');
-    lapiz.className='visible';
-    let guardar=lapiz.cloneNode(false);
-    guardar.setAttribute('value','Guardar');
-    guardar.className='invisible';
-    guardar.addEventListener('click',guardarTarea);
-    lapiz.setAttribute('value','Editar');
-    lapiz.addEventListener('click',editarTarea);
-    celda.appendChild(lapiz);
-    celda.appendChild(guardar);
-    return celda;
-}
-function anadirTarea(){
-    let text=document.getElementById('nuevaTarea').value;   
-    let descripcion=document.getElementById('descripcionNuevaTarea').value;
-    if(text===""){
-        alert("Pongale Titulo a la Tarea");
-        return;
-    }
+    
     let row=document.createElement('tr');
-    row.appendChild(crearTarea(text,descripcion));
-    row.appendChild(crearCheck());
-    row.appendChild(crearEditar());
+    row.setAttribute('id',`task${id}`);
+    for(let i=0;i<3;i++)
+        row.appendChild(document.createElement('td'));
+        
+    row.firstChild.className="task";
+    let newTask=new Task(tittle,description,id,isCompleted);
+    taskList.push(newTask);
+        
+    row.childNodes[2].appendChild(createButton(`edit${id}`,'Editar',editTask));
+    row.childNodes[2].appendChild(createButton(`save${id}`,'Guardar',saveTask));
+
     document.getElementById("list").appendChild(row);
-    document.getElementById('nuevaTarea').value="";
-    document.getElementById('descripcionNuevaTarea').value="";
+    newTask.draw();
+
+    id++;   
+    
+    document.getElementById('tittleNewTask').value="";
+    document.getElementById('descriptionNewTask').value="";
+}
+function clickAddTask(){
+    let tittle=document.getElementById('tittleNewTask').value;  
+    let description=document.getElementById('descriptionNewTask').value;
+    addTask(tittle,description)
 }
 
+document.getElementById("addTaskButton").addEventListener('click',clickAddTask);
+init();
 
-document.getElementById('botonTarea').addEventListener('click',anadirTarea);
+function init(){
+    for(let task of data){
+        addTask(task[0],task[1],task[2]);
+    }
+}
+
