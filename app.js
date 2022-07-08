@@ -10,11 +10,13 @@ const data=[
 class Task{
     staticTask="visible";
     dynamicTask="invisible";
-    constructor (tittle, description,taskId,isCompleted){
+    constructor (tittle, description,taskId,isCompleted, buttons){
         this.tittle=tittle;
         this.description=description;
         this.taskId=taskId;
         this.isCompleted=isCompleted;
+        this.saveButton=buttons[1];
+        this.editButton=buttons[0];
     }
     taskHTML() {
         return `<div class=${this.staticTask}>
@@ -35,11 +37,24 @@ class Task{
         if(row.childNodes[1].childNodes.length===0)
         row.childNodes[1].appendChild(createCheckbox(this.taskId,this.isCompleted));
 
-        let saveButton=document.getElementById(`save${this.taskId}`);
-        let editButton=document.getElementById(`edit${this.taskId}`);
-        saveButton.className=this.dynamicTask;
-        editButton.className=this.staticTask;
+        this.saveButton.className=this.dynamicTask;
+        this.editButton.className=this.staticTask;
     }
+
+    hide(){
+        /*this.saveButton.className="invisible";
+        this.editButton.className="invisible";
+        let div=document.getElementById(`completed${this.taskId}`);
+        div.className="invisible";*/
+        let row=document.getElementById(`task${this.taskId}`);
+        row.className="invisible";
+    }
+
+    show(){
+        let row=document.getElementById(`task${this.taskId}`);
+        row.className="visible";
+    }
+    
 }
 
 function editTask(event){
@@ -63,6 +78,7 @@ function saveTask(event){
 
 function createCheckbox(taskId, taskIsCompleted){
     let div=document.createElement('div');
+    div.setAttribute('id',`completed${taskId}`);
     let box=document.createElement("input");
     box.setAttribute('type','checkbox');
     box.setAttribute('id',`check${taskId}`);
@@ -104,13 +120,12 @@ function addTask(tittle,description,isCompleted=false){
         row.appendChild(document.createElement('td'));
         
     row.firstChild.className="task";
-    let newTask=new Task(tittle,description,id,isCompleted);
-    taskList.push(newTask);
-        
     row.childNodes[2].appendChild(createButton(`edit${id}`,'Editar',editTask));
     row.childNodes[2].appendChild(createButton(`save${id}`,'Guardar',saveTask));
-
     document.getElementById("list").appendChild(row);
+    
+    let newTask=new Task(tittle,description,id,isCompleted,row.childNodes[2].childNodes);
+    taskList.push(newTask);
     newTask.draw();
 
     id++;   
@@ -124,7 +139,23 @@ function clickAddTask(){
     addTask(tittle,description)
 }
 
+function filter(event){
+    let fil=event.target.value;
+    for(let task of taskList){
+        if(fil=="all") task.show();
+        if(fil=="completed"){
+            if(task.isCompleted) task.show();
+            else task.hide();
+        }
+        if(fil=="incompleted"){
+            if(task.isCompleted) task.hide();
+            else task.show();
+        }
+    }
+}
+
 document.getElementById("addTaskButton").addEventListener('click',clickAddTask);
+document.getElementById('filter').addEventListener('change',filter);
 init();
 
 function init(){
